@@ -13,7 +13,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock #mount docker socket to communicate with docker daemon
       - ./ansible_workspace_dir:/var/jenkins_home/ansible_workspace_dir
     networks:
-      - jenkins_network  #network to communicate with other services
+      - jenkins_network #network to communicate with other services
 
   vault:
     image: vault:1.13.2 #feel free to use latest version since there is not latest tag
@@ -23,7 +23,8 @@ services:
       - VAULT_DATA:/vault/data #mount volume to persist data
       - ./registry_configs:/etc/nginx/conf.d
       - ./vault_config/vault-config.json:/vault/config/vault.json #mount vault config file
-    cap_add:     #add capabilities to container
+    cap_add:
+      #add capabilities to container
       - IPC_LOCK #allow vault to lock memory
     entrypoint: vault server -config=/vault/config/vault.json
     networks:
@@ -42,7 +43,7 @@ services:
     image: "nginx:alpine"
     ports:
       - 80:80
-      # - 443:443 - uncomment if you want to use SSL
+      # - 443:443 - uncomment if you will use SSL
     links:
       - docker-registry:docker-registry #link docker-registry service
     volumes:
@@ -53,8 +54,29 @@ services:
     networks:
       - jenkins_network
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./monitoring_config/promtheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      # - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+
+    grafana:
+      image: grafana/grafana
+      volumes:
+        - ./monitoring_config/grafana/grafana_datasources.yml:/etc/grafana/provisioning/datasources/all.yaml
+        - ./monitoring_config/grafana/grafana_config.ini:/etc/grafana/config.ini
+        - grafana_data:/var/lib/grafana
+      ports:
+        - 3000:3000
+
 networks:
   jenkins_network:
+
 
 volumes:
   JENKINS_DATA:
