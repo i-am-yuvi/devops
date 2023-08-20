@@ -20,4 +20,4 @@ username=$(vault kv get -field=username registry-secrets/auth)
 password=$(vault kv get -field=password registry-secrets/auth)
 
 # Set environment variables inside the Jenkins container
-docker exec -it devops-jenkins-1 /bin/sh -c "export VAULT_USERNAME=$username && export VAULT_PASSWORD=$password"
+docker exec -it devops-jenkins-1 /bin/sh -c "export REGISTRY_USERNAME=$username && export REGISTRY_PASSWORD=$password"
